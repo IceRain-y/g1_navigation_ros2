@@ -1,6 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription,ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -75,15 +75,35 @@ def generate_launch_description():
         parameters=[
             {'loc_topic': '/localization_3d'},
             {'trajectory_topic': '/trajectory_path'},
-            {'pelvis_to_foot_height': 0.8},  # 修正拼写
+            {'pelvis_to_foot_height': 0.8},  
             {'use_sim_time': use_sim_time}
         ]
+    )
+
+    # 静态TF广播
+    static_tf_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_map_to_odom',
+        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],  # 发布map->odom变换
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+
+    # 地图服务器生命周期管理
+    lifecycle_activation = ExecuteProcess(
+        cmd=["ros2 lifecycle set /map_server configure && "
+             "ros2 lifecycle set /map_server activate"],
+        shell=True,
+        output='screen'
     )
     
     return LaunchDescription([
         use_sim_time_arg,
         map_server_launch,
+        lifecycle_activation,
         robot_desc_launch,
+        static_tf_node,
         rviz_node,
         nav2_bringup,
         bag_play_node

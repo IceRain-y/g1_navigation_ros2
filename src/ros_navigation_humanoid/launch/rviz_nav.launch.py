@@ -17,6 +17,15 @@ def generate_launch_description():
         param_rewrites={},
         convert_types=True
     )
+
+    # 添加静态TF广播（确保map坐标系存在）
+    static_tf_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_map_to_odom',
+        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],  # 发布map->odom变换
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+    )
     
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='false'),
@@ -36,6 +45,8 @@ def generate_launch_description():
                 # os.path.join(pkg_share, 'launch', 'map_server.launch.py')
                 PathJoinSubstitution([pkg_share, 'launch', 'map_server.launch.py'])
         )),
+
+        static_tf_node, 
         
         # 机器人描述
         IncludeLaunchDescription(
@@ -48,12 +59,11 @@ def generate_launch_description():
         Node(
             package='rviz2',
             executable='rviz2',
-            name='rviz_sim',
-            arguments=['-d', os.path.join(pkg_share, 'rviz', 'rviz_sim.rviz')],
+            name='rviz_nav',
+            arguments=['-d', os.path.join(pkg_share, 'rviz', 'rviz_nav.rviz')],
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
         ),
         
-        # 自定义节点
         Node(
             package='ros_navigation_humanoid',
             executable='bag_play',

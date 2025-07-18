@@ -1,8 +1,16 @@
+map_server:
+  ros__parameters:
+    qos_overrides:
+      /map:
+        reliability: reliable      # 持续发布，确保订阅方不会丢失数据
+        durability: transient_local # 保留最后一条消息，供后启动的节点（如 RViz）获取
+        
 controller_server:
   ros__parameters:
     controller_plugins: ["FollowPath"]
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
       # 运动参数
       max_vel_x: 0.5
       min_vel_x: 0.1
@@ -13,10 +21,10 @@ controller_server:
       xy_goal_tolerance: 0.10
       yaw_goal_tolerance: 0.05
       holonomic_robot: false
-      # DWA特有参数[6](@ref)
+      # DWA特有参数
       sim_time: 0.8
-      vx_samples: 18.0
-      vtheta_samples: 20.0
+      vx_samples: 18
+      vtheta_samples: 20
       resolution: 0.05
       # 必须添加的目标检查器配置
       goal_checker:
@@ -45,7 +53,7 @@ global_costmap:
       publish_frequency: 1.0
       static_map: true
       rolling_window: false
-      # 插件声明（关键修复）[6](@ref)
+      # 插件声明
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
@@ -66,8 +74,8 @@ local_costmap:
       update_frequency: 10.0
       publish_frequency: 10.0
       rolling_window: true
-      width: 3.0
-      height: 3.0
+      width: 3
+      height: 3
       resolution: 0.05
       # 插件声明
       plugins: ["obstacle_layer", "inflation_layer"]

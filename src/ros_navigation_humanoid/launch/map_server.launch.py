@@ -1,6 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction
+from launch.actions import DeclareLaunchArgument, GroupAction, ExecuteProcess 
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -35,17 +35,35 @@ def generate_launch_description():
         # LaunchConfiguration('pgm_map_name'),
         'map.pcd'  # 作为单独的路径元素
     ])
-    
-    # 使用navigation2的map_server节点
+
+    #添加QoS配置：确保地图持续发布
     map_server_node = Node(
         package='nav2_map_server',
         executable='map_server',
         name='map_server',
         output='screen',
         parameters=[{
-            'yaml_filename': map_yaml_file
+            'yaml_filename': map_yaml_file,
+            # 关键修改：设置QoS策略为Reliable，确保RViz后启动也能收到地图
+            'qos_overrides': {
+                '/map': {
+                    'reliability': 'reliable',  # 持续发布地图数据
+                    'durability': 'transient_local'  # 保留最后一条消息供新订阅者获取
+                }
+            }
         }]
     )
+    
+    # # 使用navigation2的map_server节点
+    # map_server_node = Node(
+    #     package='nav2_map_server',
+    #     executable='map_server',
+    #     name='map_server',
+    #     output='screen',
+    #     parameters=[{
+    #         'yaml_filename': map_yaml_file
+    #     }]
+    # )
     
     # 点云显示节点配置
     point_cloud_group = GroupAction(
@@ -68,10 +86,21 @@ def generate_launch_description():
             )
         ]
     )
+
+    #生命周期激活手动激活map_server节点
+    lifecycle_actions = ExecuteProcess(
+        cmd=[
+            'ros2', 'lifecycle', 'set', '/map_server', 'configure',
+            '&&',
+            'ros2', 'lifecycle', 'set', '/map_server', 'activate'
+        ],
+        shell=True
+    )
     
     return LaunchDescription([
         pgm_map_name_arg,
         display_point_cloud_arg,
         map_server_node,
-        point_cloud_group
+        point_cloud_group,
+        lifecycle_actions
     ])    
