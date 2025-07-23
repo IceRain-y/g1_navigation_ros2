@@ -1,5 +1,6 @@
 #include "rviz_sim.hpp"
 #include <cmath>
+// #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 RvizSimNode::RvizSimNode() : Node("rviz_sim_node"), th_(0.0), x_(0.0), y_(0.0), z_(0.0)
 {
@@ -55,29 +56,70 @@ void RvizSimNode::DealCmdVel(const geometry_msgs::msg::Twist::SharedPtr cmd_vel)
     th_ = atan2(sin(th_), cos(th_));
 }
 
-void RvizSimNode::publishTransform()
-{
-    // 创建TF变换消息
-    geometry_msgs::msg::TransformStamped transform;
-    transform.header.stamp = this->now();
-    transform.header.frame_id = "odom";
-    transform.child_frame_id = "pelvis";
+// void RvizSimNode::publishTransform()
+// {
+//     // 创建TF变换消息
+//     geometry_msgs::msg::TransformStamped transform;
+//     transform.header.stamp = this->now();
+//     transform.header.frame_id = "odom";
+//     transform.child_frame_id = "pelvis";
     
-    // 设置平移
-    transform.transform.translation.x = x_;
-    transform.transform.translation.y = y_;
-    transform.transform.translation.z = pelvis_to_foot_heigth_;
+//     // 设置平移
+//     transform.transform.translation.x = x_;
+//     transform.transform.translation.y = y_;
+//     transform.transform.translation.z = pelvis_to_foot_heigth_;
     
-    // 设置旋转
-    tf2::Quaternion q;
-    q.setRPY(0, 0, th_);
-    transform.transform.rotation.x = q.x();
-    transform.transform.rotation.y = q.y();
-    transform.transform.rotation.z = q.z();
-    transform.transform.rotation.w = q.w();
+//     // 设置旋转
+//     tf2::Quaternion q;
+//     q.setRPY(0, 0, th_);
+//     transform.transform.rotation.x = q.x();
+//     transform.transform.rotation.y = q.y();
+//     transform.transform.rotation.z = q.z();
+//     transform.transform.rotation.w = q.w();
     
-    // 发布TF变换
-    tf_broadcaster_->sendTransform(transform);
+//     // 发布TF变换
+//     tf_broadcaster_->sendTransform(transform);
+// }
+
+void RvizSimNode::publishTransform() {
+    auto now = this->now();
+    
+    // 1. 发布 odom->base_link 变换（关键修复）
+    geometry_msgs::msg::TransformStamped odom_to_base;
+    odom_to_base.header.stamp = now;
+    odom_to_base.header.frame_id = "odom";  // 父坐标系
+    odom_to_base.child_frame_id = "base_link";  // 子坐标系
+    odom_to_base.transform.translation.x = x_;
+    odom_to_base.transform.translation.y = y_;
+    odom_to_base.transform.translation.z = 0;  // 地面高度
+    
+    // 创建并赋值四元数
+    tf2::Quaternion q_base;
+    q_base.setRPY(0, 0, th_);
+    odom_to_base.transform.rotation.x = q_base.x();
+    odom_to_base.transform.rotation.y = q_base.y();
+    odom_to_base.transform.rotation.z = q_base.z();
+    odom_to_base.transform.rotation.w = q_base.w();
+    
+    tf_broadcaster_->sendTransform(odom_to_base);
+    
+    // 2. 发布 base_link->pelvis 变换
+    geometry_msgs::msg::TransformStamped base_to_pelvis;
+    base_to_pelvis.header.stamp = now;
+    base_to_pelvis.header.frame_id = "base_link";
+    base_to_pelvis.child_frame_id = "pelvis";
+    base_to_pelvis.transform.translation.z = pelvis_to_foot_heigth_;
+    base_to_pelvis.transform.rotation.w = 1.0;
+    tf_broadcaster_->sendTransform(base_to_pelvis);
+    
+    // 3. (可选) 发布 map->odom 静态变换
+    // 只有在地图服务器需要时才添加
+    // geometry_msgs::msg::TransformStamped map_to_odom;
+    // map_to_odom.header.stamp = now;
+    // map_to_odom.header.frame_id = "map";
+    // map_to_odom.child_frame_id = "odom";
+    // map_to_odom.transform.rotation.w = 1.0;
+    // tf_broadcaster_->sendTransform(map_to_odom);
 }
 
 int main(int argc, char** argv)

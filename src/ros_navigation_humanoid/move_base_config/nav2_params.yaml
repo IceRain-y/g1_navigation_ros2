@@ -8,7 +8,7 @@ map_server:
 controller_server:
   ros__parameters:
     global_frame: odom  
-    robot_base_frame: pelvis
+    robot_base_frame: base_link
     controller_plugins: ["FollowPath"]
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
@@ -20,23 +20,21 @@ controller_server:
       min_vel_theta: -1.0
       acc_lim_x: 1.0
       acc_lim_theta: 0.6
-      xy_goal_tolerance: 0.10
+      xy_goal_tolerance: 0.30
       yaw_goal_tolerance: 0.05
-      holonomic_robot: false
-      base_frame: pelvis 
-      global_frame: odom  
+      holonomic_robot: false 
       # 确保指定成本地图话题
       costmap_topic: local_costmap/costmap_raw
       footprint_topic: local_costmap/published_footprint
       # DWA特有参数
-      sim_time: 0.8
-      vx_samples: 18
-      vtheta_samples: 20
+      sim_time: 2.0
+      vx_samples: 30
+      vtheta_samples: 40
       resolution: 0.05
       # 必须添加的目标检查器配置
       goal_checker:
         plugin: "nav2_controller::SimpleGoalChecker"
-        xy_goal_tolerance: 0.10
+        xy_goal_tolerance: 0.30
         yaw_goal_tolerance: 0.05
       # 添加传感器配置
       observation_sources: scan
@@ -52,7 +50,7 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
       use_astar: true
-      allow_unknown: false
+      allow_unknown: true
       tolerance: 0.5
       # 添加代价转换函数
       cost_travel_factor: 1.0
@@ -61,8 +59,8 @@ planner_server:
 global_costmap:
   global_costmap:
     ros__parameters:
-      global_frame: odom
-      robot_base_frame: pelvis 
+      global_frame: map
+      robot_base_frame: base_link 
       update_frequency: 1.0
       publish_frequency: 1.0
       static_map: true
@@ -73,10 +71,16 @@ global_costmap:
         plugin: "nav2_costmap_2d::StaticLayer"
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
-        topic: /scan
+        # topic: /scan
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: LaserScan
+          marking: true
+          clearing: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.5
+        inflation_radius: 0.2
         cost_scaling_factor: 8.0
       track_unknown_space: true
       always_send_full_costmap: true
@@ -85,7 +89,7 @@ local_costmap:
   local_costmap:
     ros__parameters:
       global_frame: odom  
-      robot_base_frame: pelvis
+      robot_base_frame: base_link
       update_frequency: 10.0
       publish_frequency: 10.0
       rolling_window: true
@@ -96,7 +100,13 @@ local_costmap:
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
-        topic: /scan
+        # topic: /scan
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: LaserScan
+          marking: true
+          clearing: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 0.2
@@ -110,19 +120,28 @@ costmap_common:
   ros__parameters:
     robot_radius: 0.12
     transform_tolerance: 0.5
-    obstacle_range: 3.0
-    raytrace_range: 3.5
+    obstacle_range: 5.0
+    raytrace_range: 5.5
     inflation_radius: 0.2
     # 传感器配置
     observation_sources: scan
     scan:
-      sensor_frame: laser
+      sensor_frame: base_link
       data_type: "LaserScan"
       topic: "/scan"
       marking: true
       clearing: true
       min_obstacle_height: 0.0
       max_obstacle_height: 2.0
+
+amcl:
+  ros__parameters:
+    base_frame_id: base_link
+    odom_frame_id: odom
+    global_frame_id: map
+    use_sim_time: true  
+    update_min_d: 0.1  
+    update_min_a: 0.05  
 
 # 生命周期管理器配置
 lifecycle_manager:

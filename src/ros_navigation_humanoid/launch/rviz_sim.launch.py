@@ -81,14 +81,14 @@ def generate_launch_description():
     )
 
     # # 静态TF广播
-    static_tf_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_tf_map_to_odom',
-        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],  # 发布map->odom变换
-        parameters=[{'use_sim_time': use_sim_time}],
-        output='screen'
-    )
+    # static_tf_node = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_tf_map_to_odom',
+    #     arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],  # 发布map->odom变换
+    #     parameters=[{'use_sim_time': use_sim_time}],
+    #     output='screen'
+    # )
 
     # # 地图服务器生命周期管理
     # lifecycle_activation = ExecuteProcess(
@@ -130,6 +130,14 @@ def generate_launch_description():
             ]}
         ]
     )
+
+    tf_monitor = Node(
+        package='tf2_ros',
+        executable='tf2_monitor',
+        name='tf_monitor',
+        arguments=['odom', 'base_link'],  # 监控关键帧
+        output='screen'
+    )
     
     return LaunchDescription([
         use_sim_time_arg,
@@ -138,8 +146,9 @@ def generate_launch_description():
         lifecycle_manager,
         lidar_sim_node,
         robot_desc_launch,
-        static_tf_node,
+        # static_tf_node,
         rviz_node,
         nav2_bringup,
-        bag_play_node
+        tf_monitor, 
+        # bag_play_node
     ])

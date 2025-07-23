@@ -13,7 +13,7 @@ LidarSimulator::LidarSimulator()
     );
     
     // 声明参数
-    this->declare_parameter("frame_id", "laser");
+    this->declare_parameter("frame_id", "base_link");
     this->declare_parameter("angle_min", -3.14159);
     this->declare_parameter("angle_max", 3.14159);
     this->declare_parameter("angle_increment", 0.0174533);
@@ -34,14 +34,21 @@ void LidarSimulator::timer_callback()
     scan.range_max = this->get_parameter("range_max").as_double();
     
     scan.header.stamp = this->now();
+    scan.header.frame_id = "base_link"; 
     
     // 计算扫描点数量
     int num_points = static_cast<int>((scan.angle_max - scan.angle_min) / scan.angle_increment);
     scan.ranges.resize(num_points, scan.range_max);  // 默认设置为最大距离
     
     // 添加模拟障碍物（正前方1米处）
-    int center_index = num_points / 2;
-    scan.ranges[center_index] = 1.0;
+    // int center_index = num_points / 2;
+    // scan.ranges[center_index] = 1.0;
+    int center = num_points / 2;
+    for (int i = center - 5; i <= center + 5; ++i) {
+        if (i >= 0 && i < num_points) {
+            scan.ranges[i] = 5.0;  // 正前方 5 米有障碍物
+        }
+    }
     
     // 发布扫描数据
     publisher_->publish(scan);
