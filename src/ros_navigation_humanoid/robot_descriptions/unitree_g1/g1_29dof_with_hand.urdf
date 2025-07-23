@@ -3,10 +3,24 @@
     <compiler meshdir="meshes" discardvisual="false"/>
   </mujoco>
 
-  <!-- [CAUTION] uncomment when convert to mujoco -->
   <link name="map"></link>
-  <joint name="floating_base_joint" type="fixed">
+
+  <link name="odom">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="map_to_odom" type="fixed">
     <parent link="map"/>
+    <child link="odom"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- [CAUTION] uncomment when convert to mujoco -->
+  <joint name="floating_base_joint" type="floating">
+    <parent link="odom"/>
     <child link="pelvis"/>
   </joint>
 

@@ -80,7 +80,7 @@ def generate_launch_description():
         ]
     )
 
-    # 静态TF广播
+    # # 静态TF广播
     static_tf_node = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -90,18 +90,53 @@ def generate_launch_description():
         output='screen'
     )
 
-    # 地图服务器生命周期管理
-    lifecycle_activation = ExecuteProcess(
-        cmd=["ros2 lifecycle set /map_server configure && "
-             "ros2 lifecycle set /map_server activate"],
-        shell=True,
+    # # 地图服务器生命周期管理
+    # lifecycle_activation = ExecuteProcess(
+    #     cmd=["ros2 lifecycle set /map_server configure && "
+    #          "ros2 lifecycle set /map_server activate"],
+    #     shell=True,
+    #     output='screen'
+    # )
+
+    lidar_sim_node = Node(
+        package='ros_navigation_humanoid',
+        executable='lidar_simulator',
+        name='lidar_simulator',
+        parameters=[{
+            'frame_id': 'laser',
+            'angle_min': -3.14159,
+            'angle_max': 3.14159,
+            'angle_increment': 0.0174533,
+            'range_min': 0.1,
+            'range_max': 10.0
+        }],
         output='screen'
+    )
+
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager',
+        output='screen',
+        parameters=[
+            {'autostart': True},
+            {'node_names': [
+                'map_server',
+                'amcl',
+                'planner_server',
+                'controller_server',
+                'global_costmap',
+                'local_costmap'
+            ]}
+        ]
     )
     
     return LaunchDescription([
         use_sim_time_arg,
         map_server_launch,
-        lifecycle_activation,
+        # lifecycle_activation,
+        lifecycle_manager,
+        lidar_sim_node,
         robot_desc_launch,
         static_tf_node,
         rviz_node,

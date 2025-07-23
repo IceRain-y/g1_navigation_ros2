@@ -7,6 +7,8 @@ map_server:
         
 controller_server:
   ros__parameters:
+    global_frame: odom  
+    robot_base_frame: pelvis
     controller_plugins: ["FollowPath"]
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
@@ -21,6 +23,11 @@ controller_server:
       xy_goal_tolerance: 0.10
       yaw_goal_tolerance: 0.05
       holonomic_robot: false
+      base_frame: pelvis 
+      global_frame: odom  
+      # 确保指定成本地图话题
+      costmap_topic: local_costmap/costmap_raw
+      footprint_topic: local_costmap/published_footprint
       # DWA特有参数
       sim_time: 0.8
       vx_samples: 18
@@ -31,6 +38,13 @@ controller_server:
         plugin: "nav2_controller::SimpleGoalChecker"
         xy_goal_tolerance: 0.10
         yaw_goal_tolerance: 0.05
+      # 添加传感器配置
+      observation_sources: scan
+      scan:
+        topic: /scan
+        data_type: "LaserScan"
+        marking: true
+        clearing: true
 
 planner_server:
   ros__parameters:
@@ -47,8 +61,8 @@ planner_server:
 global_costmap:
   global_costmap:
     ros__parameters:
-      global_frame: map
-      robot_base_frame: pelvis
+      global_frame: odom
+      robot_base_frame: pelvis 
       update_frequency: 1.0
       publish_frequency: 1.0
       static_map: true
@@ -59,12 +73,13 @@ global_costmap:
         plugin: "nav2_costmap_2d::StaticLayer"
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
+        topic: /scan
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-      # 参数继承
-      inflation_radius: 0.5
-      cost_scaling_factor: 8.0
-      resolution: 0.05
+        inflation_radius: 0.5
+        cost_scaling_factor: 8.0
+      track_unknown_space: true
+      always_send_full_costmap: true
 
 local_costmap:
   local_costmap:
@@ -81,11 +96,14 @@ local_costmap:
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
+        topic: /scan
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-      # 参数继承
-      inflation_radius: 0.2
-      cost_scaling_factor: 4.0
+        inflation_radius: 0.2
+        cost_scaling_factor: 4.0
+      track_unknown_space: true
+      rolling_window: true
+      always_send_full_costmap: true 
 
 # 通用传感器配置
 costmap_common:
@@ -118,3 +136,5 @@ lifecycle_manager:
       - smoother_server
       - behavior_server
       - bt_navigator
+    bond_timeout: 10.0
+    bringup_order: [map_server, amcl, planner_server, controller_server]

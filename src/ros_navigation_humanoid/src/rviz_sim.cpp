@@ -60,7 +60,7 @@ void RvizSimNode::publishTransform()
     // 创建TF变换消息
     geometry_msgs::msg::TransformStamped transform;
     transform.header.stamp = this->now();
-    transform.header.frame_id = "map";
+    transform.header.frame_id = "odom";
     transform.child_frame_id = "pelvis";
     
     // 设置平移

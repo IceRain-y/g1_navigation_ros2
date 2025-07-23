@@ -90,12 +90,19 @@ ament_export_dependencies(
   geometry_msgs
 )
 
+add_executable(lidar_simulator src/lidar_simulator.cpp)
+ament_target_dependencies(lidar_simulator
+  rclcpp
+  sensor_msgs
+)
+
 # 安装可执行文件
 install(TARGETS
   rviz_sim
   bag_play
   footstep_sim
   point_cloud_display
+  lidar_simulator
   DESTINATION lib/${PROJECT_NAME}
 )
 
