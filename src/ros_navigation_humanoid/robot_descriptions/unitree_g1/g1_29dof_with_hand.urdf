@@ -30,7 +30,7 @@
   <joint name="floating_base_joint" type="continuous">
     <parent link="odom"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0.8" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
   <link name="pelvis">
@@ -53,7 +53,7 @@
   <joint name="base_to_pelvis" type="fixed">
     <parent link="base_link"/>
     <child link="pelvis"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.8" rpy="0 0 0"/>
   </joint>
 
   <link name="pelvis_contour_link">

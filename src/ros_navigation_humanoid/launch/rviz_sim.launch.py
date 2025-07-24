@@ -43,17 +43,7 @@ def generate_launch_description():
         ),
         launch_arguments={'use_sim_time': use_sim_time}.items()
     )
-    
-    # RViz节点
-    rviz_node = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz_sim',
-        output='screen',
-        arguments=['-d', PathJoinSubstitution([pkg_share, 'rviz', 'rviz_sim.rviz'])],
-        parameters=[{'use_sim_time': use_sim_time}]
-    )
-    
+       
     # 导航栈集成（使用标准导航启动）
     nav2_bringup = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -138,6 +128,24 @@ def generate_launch_description():
         arguments=['odom', 'base_link'],  # 监控关键帧
         output='screen'
     )
+
+    # RViz节点
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz_sim',
+        output='screen',
+        arguments=['-d', PathJoinSubstitution([pkg_share, 'rviz', 'rviz_sim.rviz'])],
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
+
+    rviz_sim_node = Node(
+        package='ros_navigation_humanoid',
+        executable='rviz_sim',
+        name='rviz_sim',
+        parameters=[{'pelvis_to_foot_heigth': 0.8}],
+        output='screen'
+    )
     
     return LaunchDescription([
         use_sim_time_arg,
@@ -151,4 +159,5 @@ def generate_launch_description():
         nav2_bringup,
         tf_monitor, 
         # bag_play_node
+        rviz_sim_node
     ])
