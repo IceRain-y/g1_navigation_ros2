@@ -19,32 +19,26 @@
   </joint>
 
   <link name="base_link">
-    <!-- <inertial>
+    <inertial>
       <origin xyz="0 0 -0.07605" rpy="0 0 0"/>
       <mass value="3.813"/>
       <inertia ixx="0.010549" ixy="0" ixz="2.1E-06" iyy="0.0093089" iyz="0" izz="0.0079184"/>
-    </inertial> -->
+    </inertial>
   </link>
 
   <!-- [CAUTION] uncomment when convert to mujoco -->
-  <!-- <joint name="floating_base_joint" type="floating">
-    <parent link="base_link"/>
-    <child link="pelvis"/>
-    <origin xyz="0 0 0.8" rpy="0 0 0"/>
-  </joint> -->
-
-    <joint name="odom_to_base_link" type="fixed">
+  <joint name="floating_base_joint" type="continuous">
     <parent link="odom"/>
     <child link="base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
   <link name="pelvis">
-    <inertial>
+    <!-- <inertial>
       <origin xyz="0 0 -0.07605" rpy="0 0 0"/>
       <mass value="3.813"/>
       <inertia ixx="0.010549" ixy="0" ixz="2.1E-06" iyy="0.0093089" iyz="0" izz="0.0079184"/>
-    </inertial>
+    </inertial> -->
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -56,13 +50,7 @@
     </visual>
   </link>
 
-  <!-- <joint name="base_to_pelvis" type="fixed">
-    <parent link="base_link"/>
-    <child link="pelvis"/>
-    <origin xyz="0 0 0.8" rpy="0 0 0"/>
-  </joint> -->
-
-  <joint name="floating_base_joint" type="fixed">
+  <joint name="base_to_pelvis" type="fixed">
     <parent link="base_link"/>
     <child link="pelvis"/>
     <origin xyz="0 0 0.8" rpy="0 0 0"/>

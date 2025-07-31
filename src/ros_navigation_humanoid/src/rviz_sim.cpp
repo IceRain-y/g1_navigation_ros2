@@ -22,6 +22,24 @@ RvizSimNode::RvizSimNode() : Node("rviz_sim_node"), th_(0.0), x_(0.0), y_(0.0), 
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(20),  // 50Hz
         std::bind(&RvizSimNode::publishTransform, this));
+
+    // ======  新增：首次发布零位 TF，避免第一次按键闪动  ======
+    {
+        auto init = geometry_msgs::msg::TransformStamped();
+        init.header.stamp = this->now();
+        init.header.frame_id   = "odom";
+        init.child_frame_id    = "base_link";
+        init.transform.translation.x = 0.0;
+        init.transform.translation.y = 0.0;
+        init.transform.translation.z = 0.0;
+        tf2::Quaternion q;
+        q.setRPY(0, 0, 0);
+        init.transform.rotation.x = q.x();
+        init.transform.rotation.y = q.y();
+        init.transform.rotation.z = q.z();
+        init.transform.rotation.w = q.w();
+        tf_broadcaster_->sendTransform(init);
+    }
     
     RCLCPP_INFO(this->get_logger(), "Rviz simulation node initialized");
 }
@@ -91,7 +109,7 @@ void RvizSimNode::publishTransform() {
     odom_to_base.child_frame_id = "base_link";  // 子坐标系
     odom_to_base.transform.translation.x = x_;
     odom_to_base.transform.translation.y = y_;
-    odom_to_base.transform.translation.z = 0;  // 地面高度
+    odom_to_base.transform.translation.z = 0.0;  // 地面高度
     
     // 创建并赋值四元数
     tf2::Quaternion q_base;

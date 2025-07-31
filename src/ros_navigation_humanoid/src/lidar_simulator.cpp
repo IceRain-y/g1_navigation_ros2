@@ -27,6 +27,7 @@ void LidarSimulator::timer_callback()
     
     // 获取参数
     scan.header.frame_id = this->get_parameter("frame_id").as_string();
+    // scan.header.frame_id = "base_link"; 
     scan.angle_min = this->get_parameter("angle_min").as_double();
     scan.angle_max = this->get_parameter("angle_max").as_double();
     scan.angle_increment = this->get_parameter("angle_increment").as_double();
@@ -34,7 +35,6 @@ void LidarSimulator::timer_callback()
     scan.range_max = this->get_parameter("range_max").as_double();
     
     scan.header.stamp = this->now();
-    scan.header.frame_id = "base_link"; 
     
     // 计算扫描点数量
     int num_points = static_cast<int>((scan.angle_max - scan.angle_min) / scan.angle_increment);

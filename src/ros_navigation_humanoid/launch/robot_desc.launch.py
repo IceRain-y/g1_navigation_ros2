@@ -45,6 +45,14 @@ def generate_launch_description():
                          'ignore_fixed_joints': True }]
         )
         
+        #关节状态发布节点
+        joint_state_publisher_node = Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+        )
+        
         # 关节状态发布GUI节点
         joint_state_publisher_gui_node = Node(
             package='joint_state_publisher_gui',
@@ -53,7 +61,7 @@ def generate_launch_description():
             output='screen'
         )
         
-        return [robot_state_publisher_node, joint_state_publisher_gui_node]
+        return [robot_state_publisher_node, joint_state_publisher_node]
     
     return LaunchDescription([
         robot_name_arg,
