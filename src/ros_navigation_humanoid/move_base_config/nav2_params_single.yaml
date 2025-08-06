@@ -1,0 +1,145 @@
+map_server:
+  ros__parameters:
+    use_sim_time: true
+    topic_name: "map"
+    frame_id: "map"
+    qos_overrides:
+      /map:
+        reliability: reliable
+        durability: transient_local
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 10.0
+    use_sim_time: true
+    print_failure_reasons: true
+    debug_trajectory: true
+    global_frame: map
+    robot_base_frame: base_link
+    odom_frame_id: odom
+    
+    # 关键修复：添加目标检查器
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.3
+      yaw_goal_tolerance: 0.8
+      stateful: true
+    
+    controller_plugins: ["FollowPath"]
+    
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      critics: ["RotateToGoal", "Oscillation", "PathAlign", "PathDist"]
+      max_vel_x: 0.5
+      min_vel_x: -0.5
+      max_vel_theta: 1.0
+      min_vel_theta: -1.0
+      acc_lim_x: 1.0
+      acc_lim_theta: 0.6
+      xy_goal_tolerance: 0.5
+      yaw_goal_tolerance: 0.8
+      holonomic_robot: false 
+      sim_time: 2.0
+      vx_samples: 50
+      vtheta_samples: 50
+
+planner_server:
+  ros__parameters:
+    use_sim_time: true
+    global_frame: map
+    robot_base_frame: base_link
+    planner_plugins: ["GridBased"]
+    
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      use_astar: true
+      allow_unknown: true
+      tolerance: 0.5
+      cost_travel_factor: 1.0
+      use_final_approach_orientation: false
+
+global_costmap:
+  ros__parameters:
+    use_sim_time: true
+    global_frame: map
+    robot_base_frame: base_link
+    update_frequency: 1.0
+    publish_frequency: 1.0
+    static_map: true
+    plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+    
+    static_layer:
+      plugin: "nav2_costmap_2d::StaticLayer"
+      map_topic: /map
+      subscribe_to_updates: true
+    
+    obstacle_layer:
+      plugin: "nav2_costmap_2d::ObstacleLayer"
+      observation_sources: scan
+    
+    inflation_layer:
+      plugin: "nav2_costmap_2d::InflationLayer"
+      inflation_radius: 0.12
+      cost_scaling_factor: 8.0
+
+local_costmap:
+  ros__parameters:
+    use_sim_time: true
+    global_frame: map  # 修复为map框架
+    robot_base_frame: base_link
+    update_frequency: 5.0
+    publish_frequency: 5.0
+    rolling_window: true
+    width: 3.0
+    height: 3.0
+    resolution: 0.05
+    plugins: ["obstacle_layer", "inflation_layer"]
+    
+    obstacle_layer:
+      plugin: "nav2_costmap_2d::ObstacleLayer"
+      observation_sources: scan
+    
+    inflation_layer:
+      plugin: "nav2_costmap_2d::InflationLayer"
+      inflation_radius: 0.12
+      cost_scaling_factor: 4.0
+
+# 传感器通用配置
+costmap_common:
+  ros__parameters:
+    robot_radius: 0.05
+    transform_tolerance: 0.5
+    footprint: "[[-0.08, -0.08], [0.08, -0.08], [0.08, 0.08], [-0.08, 0.08]]"
+    obstacle_range: 5.0
+    raytrace_range: 5.5
+    inflation_radius: 0.12
+    observation_sources: scan
+    
+    scan:
+      sensor_frame: base_link
+      data_type: "LaserScan"
+      topic: "/scan"
+      marking: true
+      clearing: true
+      min_obstacle_height: 0.0
+      max_obstacle_height: 2.0
+
+amcl:
+  ros__parameters:
+    use_sim_time: true
+    base_frame_id: base_link
+    odom_frame_id: odom
+    global_frame_id: map
+    min_particles: 1000
+    max_particles: 5000
+    laser_z_hit: 0.95
+    laser_z_rand: 0.05
+    laser_sigma_hit: 0.2
+
+# 生命周期管理器配置 (关键修复)
+lifecycle_manager:
+  ros__parameters:
+    autostart: true
+    bond_timeout: 10.0
+    bringup_order: [map_server, amcl, planner_server, controller_server, local_costmap, global_costmap, behavior_server, smoother_server, waypoint_follower, velocity_smoother]
+    

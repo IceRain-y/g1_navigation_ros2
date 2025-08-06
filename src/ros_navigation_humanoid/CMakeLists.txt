@@ -94,6 +94,9 @@ add_executable(lidar_simulator src/lidar_simulator.cpp)
 ament_target_dependencies(lidar_simulator
   rclcpp
   sensor_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 # 安装可执行文件
@@ -121,6 +124,7 @@ install(DIRECTORY
   rviz
   robot_descriptions
   resources
+  worlds
   DESTINATION share/${PROJECT_NAME}
 )
 

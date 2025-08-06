@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="g1_29dof_with_hand">
+
+  <!-- 引入材质 -->
+  <material name="white">
+    <color rgba="0.7 0.7 0.7 1"/>
+  </material>
+  <material name="dark">
+    <color rgba="0.2 0.2 0.2 1"/>
+  </material>
+
+  <!-- 宏：通用 link 的 Gazebo 属性 -->
+  <xacro:macro name="gazebo_link" params="link_name mu1:=1.0 mu2:=1.0 kp:=1000000.0 kd:=100.0">
+    <gazebo reference="${link_name}">
+      <mu1>${mu1}</mu1>
+      <mu2>${mu2}</mu2>
+      <kp>${kp}</kp>
+      <kd>${kd}</kd>
+      <material>Gazebo/Grey</material>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- 宏：IMU 插件 -->
+  <xacro:macro name="gazebo_imu" params="link_name topic_name">
+    <gazebo reference="${link_name}">
+      <sensor type="imu" name="${link_name}_imu">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <plugin name="gazebo_ros_imu" filename="libgazebo_ros_imu_sensor.so">
+          <topicName>${topic_name}</topicName>
+          <frameName>${link_name}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- 宏：D435 摄像头 -->
+  <xacro:macro name="gazebo_d435" params="link_name">
+    <gazebo reference="${link_name}">
+      <sensor type="depth" name="${link_name}_depth">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+        <plugin name="gazebo_ros_camera" filename="libgazebo_ros_openni_kinect.so">
+          <topicName>/g1/camera/depth/image_raw</topicName>
+          <cameraName>d435</cameraName>
+          <frameName>${link_name}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- 宏：MID-360 Lidar -->
+  <xacro:macro name="gazebo_mid360" params="link_name">
+    <gazebo reference="${link_name}">
+      <sensor type="ray" name="${link_name}_lidar">
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+        <visualize>true</visualize>
+        <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
+          <topicName>/g1/scan</topicName>
+          <frameName>${link_name}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- 包含原始 URDF 内容（已保留） -->
+  <xacro:include filename="$(find ros_navigation_humanoid)/robot_descriptions/unitree_g1/g1_29dof_with_hand.urdf" />
+
+  <!-- 应用 Gazebo 属性到所有 link -->
+  <gazebo_link link_name="pelvis"/>
+  <gazebo_link link_name="left_hip_pitch_link"/>
+  <gazebo_link link_name="left_hip_roll_link"/>
+  <gazebo_link link_name="left_hip_yaw_link"/>
+  <gazebo_link link_name="left_knee_link"/>
+  <gazebo_link link_name="left_ankle_pitch_link"/>
+  <gazebo_link link_name="left_ankle_roll_link"/>
+  <gazebo_link link_name="right_hip_pitch_link"/>
+  <gazebo_link link_name="right_hip_roll_link"/>
+  <gazebo_link link_name="right_hip_yaw_link"/>
+  <gazebo_link link_name="right_knee_link"/>
+  <gazebo_link link_name="right_ankle_pitch_link"/>
+  <gazebo_link link_name="right_ankle_roll_link"/>
+  <gazebo_link link_name="waist_yaw_link"/>
+  <gazebo_link link_name="waist_roll_link"/>
+  <gazebo_link link_name="torso_link"/>
+  <gazebo_link link_name="head_link"/>
+  <gazebo_link link_name="left_shoulder_pitch_link"/>
+  <gazebo_link link_name="left_shoulder_roll_link"/>
+  <gazebo_link link_name="left_shoulder_yaw_link"/>
+  <gazebo_link link_name="left_elbow_link"/>
+  <gazebo_link link_name="left_wrist_roll_link"/>
+  <gazebo_link link_name="left_wrist_pitch_link"/>
+  <gazebo_link link_name="left_wrist_yaw_link"/>
+  <gazebo_link link_name="left_hand_palm_link"/>
+  <gazebo_link link_name="left_hand_thumb_0_link"/>
+  <gazebo_link link_name="left_hand_thumb_1_link"/>
+  <gazebo_link link_name="left_hand_thumb_2_link"/>
+  <gazebo_link link_name="left_hand_middle_0_link"/>
+  <gazebo_link link_name="left_hand_middle_1_link"/>
+  <gazebo_link link_name="left_hand_index_0_link"/>
+  <gazebo_link link_name="left_hand_index_1_link"/>
+  <gazebo_link link_name="right_shoulder_pitch_link"/>
+  <gazebo_link link_name="right_shoulder_roll_link"/>
+  <gazebo_link link_name="right_shoulder_yaw_link"/>
+  <gazebo_link link_name="right_elbow_link"/>
+  <gazebo_link link_name="right_wrist_roll_link"/>
+  <gazebo_link link_name="right_wrist_pitch_link"/>
+  <gazebo_link link_name="right_wrist_yaw_link"/>
+  <gazebo_link link_name="right_hand_palm_link"/>
+  <gazebo_link link_name="right_hand_thumb_0_link"/>
+  <gazebo_link link_name="right_hand_thumb_1_link"/>
+  <gazebo_link link_name="right_hand_thumb_2_link"/>
+  <gazebo_link link_name="right_hand_middle_0_link"/>
+  <gazebo_link link_name="right_hand_middle_1_link"/>
+  <gazebo_link link_name="right_hand_index_0_link"/>
+  <gazebo_link link_name="right_hand_index_1_link"/>
+
+  <!-- 传感器插件 -->
+  <gazebo_imu link_name="imu_in_torso" topic_name="/g1/imu/torso"/>
+  <gazebo_imu link_name="imu_in_pelvis" topic_name="/g1/imu/pelvis"/>
+  <gazebo_d435 link_name="d435_link"/>
+  <gazebo_mid360 link_name="mid360_link"/>
+
+  <!-- 控制器插件 -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/g1</robotNamespace>
+    </plugin>
+  </gazebo>
+
+</robot>

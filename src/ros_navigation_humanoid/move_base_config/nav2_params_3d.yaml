@@ -1,0 +1,185 @@
+map_server:
+  ros__parameters:
+    qos_overrides:
+      /map:
+        reliability: reliable
+        durability: transient_local
+
+controller_server:
+  ros__parameters:
+    use_sim_time: true 
+    print_failure_reasons: true
+    debug_trajectory: true
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+    controller_plugins: ["FollowPath"]
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      allow_forward_trajectories_without_heading: true
+      max_vel_x: 0.3
+      min_vel_x: -0.1
+      max_vel_theta: 0.5
+      min_vel_theta: -0.5
+      acc_lim_x: 0.8
+      acc_lim_theta: 0.4
+      xy_goal_tolerance: 0.4
+      yaw_goal_tolerance: 0.8
+      inflation_radius: 0.15
+      holonomic_robot: false
+      costmap_topic: local_costmap/costmap_raw
+      footprint_topic: local_costmap/published_footprint
+      sim_time: 2.0
+      vx_samples: 20
+      vtheta_samples: 40
+      resolution: 0.05
+      goal_checker:
+        plugin: "nav2_controller::SimpleGoalChecker"
+        xy_goal_tolerance: 0.4
+        yaw_goal_tolerance: 0.8
+      observation_sources: scan
+      scan:
+        topic: /scan
+        data_type: "LaserScan"
+        marking: true
+        clearing: true
+
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      default_frame_id: "map"
+      use_astar: false
+      use_dijkstra: true
+      allow_unknown: false
+      tolerance: 0.8
+      cost_travel_factor: 2.0
+      use_final_approach_orientation: true
+      max_slope: 0.3
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      global_frame: map
+      robot_base_frame: base_link 
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      static_map: true
+      rolling_window: false
+      plugins: ["static_layer", "height_filter_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_topic: /map
+      height_filter_layer:
+        plugin: "nav2_costmap_2d::HeightFilterLayer"
+        min_z: -0.5
+        max_z: 2.5
+        filter_unknown: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: LaserScan
+          marking: true
+          clearing: true
+          min_obstacle_height: -1.0
+          max_obstacle_height: 3.0
+          obstacle_range: 8.0
+          raytrace_range: 10.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.2
+        cost_scaling_factor: 5.0
+      track_unknown_space: false
+      always_send_full_costmap: true
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      global_frame: odom  
+      robot_base_frame: base_link
+      update_frequency: 10.0
+      publish_frequency: 10.0
+      rolling_window: true
+      width: 5.0
+      height: 5.0
+      resolution: 0.05
+      plugins: ["height_filter_layer", "obstacle_layer", "inflation_layer"]
+      height_filter_layer:
+        plugin: "nav2_costmap_2d::HeightFilterLayer"
+        min_z: -0.5
+        max_z: 2.5
+        filter_unknown: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: LaserScan
+          marking: true
+          clearing: true
+          min_obstacle_height: -1.0
+          max_obstacle_height: 3.0
+          obstacle_range: 8.0
+          raytrace_range: 10.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        inflation_radius: 0.2
+        cost_scaling_factor: 5.0
+      track_unknown_space: true
+      always_send_full_costmap: true
+
+costmap_common:
+  ros__parameters:
+    robot_radius: 0.25
+    transform_tolerance: 0.8
+    obstacle_range: 8.0
+    raytrace_range: 10.0
+    inflation_radius: 0.2
+    min_obstacle_height: -1.0
+    max_obstacle_height: 3.0
+    observation_sources: scan
+    scan:
+      sensor_frame: base_link
+      data_type: "LaserScan"
+      topic: "/scan"
+      marking: true
+      clearing: true
+      min_obstacle_height: -1.0
+      max_obstacle_height: 3.0
+
+amcl:
+  ros__parameters:
+    base_frame_id: base_link
+    odom_frame_id: odom
+    global_frame_id: map
+    use_sim_time: true  
+    update_min_d: 0.3  
+    update_min_a: 0.2
+    laser_model_type: "likelihood_field"
+    laser_likelihood_max_dist: 2.0
+    laser_min_range: 0.1
+    laser_max_range: 15.0
+    laser_z_hit: 0.95
+    laser_z_short: 0.05
+    laser_z_max: 0.05
+    laser_z_rand: 0.05
+    laser_sigma_hit: 0.2
+    min_particles: 500
+    max_particles: 3000
+
+lifecycle_manager:
+  ros__parameters:
+    autostart: true
+    node_names: 
+      - map_server
+      - amcl
+      - planner_server
+      - controller_server
+      - smoother_server
+      - behavior_server
+      - bt_navigator
+    bond_timeout: 10.0
+    bringup_order: [map_server, amcl, planner_server, controller_server]

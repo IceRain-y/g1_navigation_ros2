@@ -93,11 +93,11 @@ def generate_launch_description():
         executable='lidar_simulator',
         name='lidar_simulator',
         parameters=[{
-            'frame_id': 'base_link',
+            'frame_id': 'laser_link',
             'angle_min': -3.14159,
             'angle_max': 3.14159,
             'angle_increment': 0.0174533,
-            'range_min': 0.1,
+            'range_min': 0.15,
             'range_max': 10.0
         }],
         output='screen'
@@ -116,7 +116,10 @@ def generate_launch_description():
                 'planner_server',
                 'controller_server',
                 'global_costmap',
-                'local_costmap'
+                'local_costmap',
+                'behavior_server',
+                'bt_navigator',
+                'smoother_server'
             ]}
         ]
     )
@@ -125,7 +128,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='tf2_monitor',
         name='tf_monitor',
-        arguments=['map','odom', 'base_link','pelvis','left_hip_pitch_link'],  # 监控关键帧
+        arguments=['map','base_link'],  
         output='screen'
     )
 
@@ -147,17 +150,34 @@ def generate_launch_description():
         output='screen'
     )
     
+    amcl_node = Node(
+        package='nav2_amcl',
+        executable='amcl',
+        name='amcl',
+        output='screen',
+        parameters=[{
+            'use_sim_time': True,
+            'base_frame_id': 'base_link',
+            'odom_frame_id': 'odom',
+            'global_frame_id': 'map',
+            'scan_topic': '/scan'
+        }]
+    )
+    
     return LaunchDescription([
         use_sim_time_arg,
         map_server_launch,
         # lifecycle_activation,
-        lifecycle_manager,
         lidar_sim_node,
         robot_desc_launch,
-        static_tf_node,
+        # static_tf_node,
         rviz_node,
         tf_monitor, 
         # bag_play_node
         rviz_sim_node,
-        nav2_bringup
+        nav2_bringup,
+        amcl_node,
+        lifecycle_manager
     ])
+
+

@@ -92,7 +92,11 @@ def generate_launch_description():
         cmd=[
             'ros2', 'lifecycle', 'set', '/map_server', 'configure',
             '&&',
-            'ros2', 'lifecycle', 'set', '/map_server', 'activate'
+            'ros2', 'lifecycle', 'set', '/map_server', 'activate',
+            '&&',
+            'ros2', 'lifecycle', 'set', '/amcl', 'configure',
+            '&&',
+            'ros2', 'lifecycle', 'set', '/amcl', 'activate'  
         ],
         shell=True
     )
