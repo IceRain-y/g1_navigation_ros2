@@ -14,6 +14,7 @@ find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
@@ -99,6 +100,15 @@ ament_target_dependencies(lidar_simulator
   tf2_geometry_msgs
 )
 
+add_executable(odom_simulator src/odom_simulator.cpp)
+ament_target_dependencies(odom_simulator
+  rclcpp
+  nav_msgs
+  tf2_ros
+  geometry_msgs
+  tf2_geometry_msgs
+)
+
 # 安装可执行文件
 install(TARGETS
   rviz_sim
@@ -106,6 +116,7 @@ install(TARGETS
   footstep_sim
   point_cloud_display
   lidar_simulator
+  odom_simulator
   DESTINATION lib/${PROJECT_NAME}
 )
 

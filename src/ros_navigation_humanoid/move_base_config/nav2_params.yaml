@@ -151,12 +151,14 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link 
       odom_frame_id: odom
-      origin_x: -2.5   
-      origin_y: -2.5  
+      origin_x: -50.0  
+      origin_y: -50.0  
       update_frequency: 1.0
       publish_frequency: 1.0
       static_map: true
       rolling_window: false
+      width: 100
+      height: 100
       # 插件声明
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
@@ -173,7 +175,7 @@ global_costmap:
           clearing: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.12
+        inflation_radius: 0.15
         cost_scaling_factor: 8.0
       track_unknown_space: true
       always_send_full_costmap: true
@@ -208,7 +210,7 @@ local_costmap:
           clearing: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.05
+        inflation_radius: 0.15
         cost_scaling_factor: 3.0
       track_unknown_space: true
       rolling_window: true
@@ -217,7 +219,7 @@ local_costmap:
 # 通用传感器配置
 costmap_common:
   ros__parameters:
-    robot_radius: 0.2
+    robot_radius: 0.1
     # footprint: "[[-0.2, -0.2], [0.2, -0.2], [0.2, 0.2], [-0.2, 0.2]]"
     transform_tolerance: 0.5
     obstacle_range: 5.0
@@ -250,6 +252,21 @@ amcl:
     laser_z_hit: 0.95
     laser_z_rand: 0.05
     laser_sigma_hit: 0.2
+
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+
+    error_code_names:
+      - compute_path_error_code
+      - follow_path_error_code
 
 # 生命周期管理器配置
 lifecycle_manager:

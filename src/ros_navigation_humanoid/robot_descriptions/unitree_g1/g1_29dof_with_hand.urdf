@@ -1,7 +1,7 @@
 <robot name="g1_29dof_with_hand">
-  <mujoco>
+  <!-- <mujoco>
     <compiler meshdir="meshes" discardvisual="false"/>
-  </mujoco>
+  </mujoco> -->
 
   <link name="map"></link>
 

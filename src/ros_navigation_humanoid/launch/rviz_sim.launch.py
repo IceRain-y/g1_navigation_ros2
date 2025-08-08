@@ -37,6 +37,17 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items()
     )
     
+    # map_server_node = Node(
+    #     package='nav2_map_server',
+    #     executable='map_server',
+    #     name='map_server',
+    #     output='screen',
+    #     parameters=[{
+    #         'yaml_filename': "/home/p30021405276/code_pnc/humanoid_navigation/src/ros_navigation_humanoid/maps/map.yaml", 
+    #         'use_sim_time': use_sim_time
+    #     }]
+    # )
+    
     robot_desc_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_share, 'launch', 'robot_desc.launch.py')
@@ -164,19 +175,28 @@ def generate_launch_description():
         }]
     )
     
+    odom_simulator_node = Node(
+        package='ros_navigation_humanoid',
+        executable='odom_simulator',
+        name='odom_simulator',
+        output='screen'
+    )
+    
     return LaunchDescription([
         use_sim_time_arg,
         map_server_launch,
+        amcl_node,
+        # map_server_node,
         # lifecycle_activation,
         lidar_sim_node,
         robot_desc_launch,
+        nav2_bringup,
         # static_tf_node,
         rviz_node,
         tf_monitor, 
         # bag_play_node
         rviz_sim_node,
-        nav2_bringup,
-        amcl_node,
+        odom_simulator_node,
         lifecycle_manager
     ])
 
