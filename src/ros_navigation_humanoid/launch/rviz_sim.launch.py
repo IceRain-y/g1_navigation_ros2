@@ -167,7 +167,7 @@ def generate_launch_description():
         name='amcl',
         output='screen',
         parameters=[{
-            'use_sim_time': True,
+            'use_sim_time': use_sim_time,
             'base_frame_id': 'base_link',
             'odom_frame_id': 'odom',
             'global_frame_id': 'map',

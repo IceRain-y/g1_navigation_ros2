@@ -642,8 +642,8 @@
     </collision>
   </link>
   <joint name="laser_joint" type="fixed">
-    <!-- <origin xyz="0 0 0.425" rpy="0 0 0"/>  -->
-    <origin xyz="0 0 0.56" rpy="0 0 0"/>   
+    <origin xyz="0 0 0.425" rpy="0 0 0"/> 
+    <!-- <origin xyz="0 0 0.56" rpy="0 0 0"/>    -->
     <!-- 解释：相对于head_link原点，沿Z轴正方向偏移5cm（激光雷达朝前上方安装） -->
     <parent link="head_link"/>
     <child link="laser_link"/>

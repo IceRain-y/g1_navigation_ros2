@@ -1,0 +1,58 @@
+/**:
+  ros__parameters:
+    use_sim_time: false           
+
+    
+    scan_topic: /scan           
+    # pointcloud_topic: /livox/lidar 
+    scan_header_buffer_time: 1.0  
+    scan_queue_size: 10
+    # min_range: 0.25
+
+    base_frame: base_link         
+    odom_frame: odom              
+    map_frame: map                
+
+    map_start_pose: [0.0, 0.0, 0.0] 
+    # map_resolution: 0.05          
+    # map_size_x: 20.0              
+    # map_size_y: 20.0              
+
+    minimum_time_between_scans: 0.5 
+    minimum_travel_distance: 0.2  
+    minimum_travel_angle: 0.1     
+
+    max_icp_iterations: 100       
+    max_keyframes_to_try: 50      
+    loop_search_maximum_distance: 5.0 
+    loop_search_minimum_distance: 0.5 
+    loop_search_space: 1.0        
+    loop_closure_threshold: 0.7   
+
+    # filter_parameter_active: true 
+    # filter_size_a: 0.5            
+    # filter_size_b: 0.5            
+
+    debug_map_output: false       
+    debug_map_resolution: 0.05    
+    output_directory: /tmp/slam_toolbox_debug 
+
+    #ceres_solver_options.max_num_iterations: 100
+    #ceres_solver_options.function_tolerance: 1e-6
+    #ceres_solver_options.gradient_tolerance: 1e-8
+
+    # throttle_scans: false          
+    max_keyframes_per_second: 1.0  
+
+    # map_file_name: /home/unitree/go2_ws1/map/map                  
+    save_map_on_shutdown: true   
+    load_map_on_startup: true    
+    use_map_saver: true
+    
+    # transform_publish_period: 0
+    # distance_variance_penalty: 0.5
+
+    # min_laser_range: 0.2
+    # max_laser_range: 30.0
+
+    use_lifecycle: true

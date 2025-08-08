@@ -8,7 +8,7 @@ LidarSimulator::LidarSimulator()
     
     // 创建定时器，20Hz发布数据
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(50),
+        std::chrono::milliseconds(100),
         std::bind(&LidarSimulator::timer_callback, this)
     );
     
